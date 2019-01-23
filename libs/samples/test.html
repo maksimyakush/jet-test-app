@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <script>
+        window.webix_strict = true;
+      </script>
+      <link rel="stylesheet" href="../codebase/webix.css?v=6.1.4" type="text/css" charset="utf-8">
+      <script src="../codebase/webix.js?v=6.1.4" type="text/javascript" charset="utf-8"></script>
+      <title>Test</title>
+      <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css?v=6.1.4" integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
+   </head>
+   <body>
+    <script>
+      // Webix bug: edit any cell in the table, change one digit, then press Enter
+      webix.proxy.GraphQL.url = 'https://nw2kwj8vql.sse.codesandbox.io';
+
+      const numEdit = { editor: 'text', numberFormat: '1,111' };
+
+      webix.ui({
+        view: 'datatable',
+        editable: true,
+        on: {
+          // Make the entire row look editable when any cell is clicked
+          onItemClick(id) {
+            this.editRow(id);
+            this.focusEditor(id);
+          },
+        },
+        columns: [
+          { id: 'num0', ...numEdit },
+          { id: 'num1', ...numEdit },
+          { id: 'num2', ...numEdit },
+          { id: 'num3', ...numEdit },
+          { id: 'num4', ...numEdit },
+        ],
+        save: {
+          update() {
+            webix.message('Update should be called ONCE');
+            return webix.proxy('GraphQL', `mutation { noop }`).save();
+          }
+        },
+        // The bug only triggers when the thousand numberFormat kicks in.
+        // Change the call to numbers below to "numbers(from: 10, to: 20)",
+        // and the bug won't happen (unless you edit a cell to a number > 999)
+        url: `GraphQL->{
+          numbers(from: 1000, to: 1009) {
+            num0 num1 num2 num3 num4 
+          }
+        }`,
+      });
+
+
+
+
+  
+      </script>
+   </body>
+</html>
