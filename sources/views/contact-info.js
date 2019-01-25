@@ -4,8 +4,8 @@ import { statuses } from "models/statuses";
 
 export default class ContactInfoView extends JetView {
 	urlChange() {
-		if (this.getParam("id")) {
-			const id = this.getParam("id");
+		if (this.getParam("id", true)) {
+			const id = this.getParam("id", true);
 			webix.promise.all([contacts.waitData, statuses.waitData]).then(() => {
 				const contact = contacts.getItem(id);
 				const status = statuses.getItem(contact.StatusID);

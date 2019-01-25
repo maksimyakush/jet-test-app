@@ -6,7 +6,7 @@ export default class ContactsListView extends JetView {
 	config() {
 		const contactsList = {
 			view: "list",
-			localId: "list",
+			localId: "contacts:list",
 			select: true,
 			type: {
 				height: 70
@@ -35,17 +35,36 @@ export default class ContactsListView extends JetView {
 					css: "webix_dark",
 					cols: [{ view: "label", label: "Contacts" }]
 				},
-				{ cols: [contactsList, { $subview: ContactInfo }] }
+				{
+					cols: [
+						{
+							rows: [
+								contactsList,
+								{
+									view: "button",
+									type: "icon",
+									icon: "wxi-plus",
+									label: "Add",
+									click: () => {
+										this.show("contact-form");
+									}
+								}
+							]
+						},
+						{ $subview: true }
+					]
+				}
 			]
 		};
 	}
 	selectListItemOnInit() {
+		this.show("contact-info");
 		const firstId = contacts.getFirstId();
 		this.setParam("id", firstId, true);
-		this.$$("list").select(firstId);
+		this.$$("contacts:list").select(firstId);
 	}
 	init() {
-		this.$$("list").sync(contacts);
+		this.$$("contacts:list").sync(contacts);
 		contacts.waitData.then(() => this.selectListItemOnInit());
 	}
 }
