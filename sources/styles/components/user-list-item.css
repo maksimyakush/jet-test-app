@@ -1,0 +1,18 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.webix_list_item .user-listitem {
+  display: grid;
+  height: 100%;
+  grid-template-columns: min-content max-content;
+  align-items: center;
+  grid-gap: 1rem;
+}
+
+.webix_list_item .user-listitem__img {
+  border-radius: 50%;
+  max-width: 50px;
+  max-height: 50px;
+}
