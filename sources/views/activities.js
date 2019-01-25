@@ -93,6 +93,7 @@ export default class ActivitiesView extends JetView {
 		};
 		return { rows: [addActivityBtn, dataTable] };
 	}
+
 	init() {
 		this.$$("datatable").sync(activities);
 		this._jetPopup = this.ui(FormPopup);

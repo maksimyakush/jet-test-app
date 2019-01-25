@@ -45,7 +45,7 @@ export default class ContactsListView extends JetView {
 		this.$$("list").select(firstId);
 	}
 	init() {
-		this.$$("list").parse(contacts);
+		this.$$("list").sync(contacts);
 		contacts.waitData.then(() => this.selectListItemOnInit());
 	}
 }

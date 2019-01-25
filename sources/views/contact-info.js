@@ -21,7 +21,7 @@ export default class ContactInfoView extends JetView {
 	config() {
 		const toolbar = {
 			view: "toolbar",
-			id: "toolbar",
+			localId: "toolbar",
 			cols: [
 				{ view: "button", value: "Delete" },
 				{ view: "button", value: "Edit" }
