@@ -6,95 +6,48 @@ import { activityTypes } from "models/activityTypes";
 export default class FormPopupView extends JetView {
 	config() {
 		const form = {
-			view: "form",
-			localId: "form",
-			rules: {
-				Details: webix.rules.isNotEmpty,
-				ContactID: webix.rules.isNotEmpty,
-				TypeID: webix.rules.isNotEmpty,
-				Date: webix.rules.isNotEmpty,
-				Time: webix.rules.isNotEmpty
-			},
+      view: "form",
+      autoheight: false,
+			localId: "contact:form",
+
 			elements: [
 				{
-					view: "textarea",
-					label: "Details",
-					name: "Details",
+					view: "text",
+					label: "First Name",
+					name: "FirstName",
 					invalidMessage: "Fill the details field!",
 					required: true
 				},
 				{
-					view: "richselect",
-					label: "Contacts",
-					options: contacts,
-					name: "ContactID",
-					invalidMessage: "Choose the contact, please!",
+					view: "text",
+					label: "Last Name",
+					name: "LastName",
+					invalidMessage: "Fill the details field!",
 					required: true
-				},
-				{
-					view: "richselect",
-					label: "Activity",
-					options: activityTypes,
-					name: "TypeID",
-					invalidMessage: "Choose the activity, please!",
-					required: true
-				},
-
-				{
-					view: "datepicker",
-					label: "Date",
-					name: "Date",
-					format: "%d-%m-%Y",
-					invalidMessage: "Choose date, please!",
-					required: true
-				},
-				{
-					view: "datepicker",
-					label: "Time",
-					name: "Time",
-					type: "time",
-					format: "%H:%i",
-					invalidMessage: "Choose time, please!",
-					required: true
-				},
-				{
-					view: "checkbox",
-					checkValue: "Close",
-					uncheckValue: "Open",
-					label: "Completed",
-					name: "State"
 				},
 				{
 					view: "button",
 					localId: "addBtn",
 					value: "Add(*save)",
 					click() {
-						if (!this.getFormView().validate()) return;
-						const strDateFormat = webix.Date.dateToStr("%d-%m-%Y");
-						const strTimeFormat = webix.Date.dateToStr("%H:%i");
-						const { id, Date, Time } = this.getFormView().getValues();
-
-						const DueDate = `${strDateFormat(Date)} ${strTimeFormat(Time)}`;
-						if (activities.exists(id)) {
-							activities.updateItem(id, {
-								...this.getFormView().getValues(),
-								DueDate
-							});
-						} else {
-							activities.add({ ...this.getFormView().getValues(), DueDate });
-						}
-						this.getFormView().clear();
-						this.getFormView().clearValidation();
-						this.$scope.getRoot().hide();
+					contacts.add(this.getFormView().getValues());
 					}
 				},
 				{
 					view: "button",
 					value: "Close",
 					click() {
+            webix.confirm({
+              text:
+                "Are you sure you want to close form?",
+              callback: (result) => {
+                if (result) this.$scope.show("contact-info");
+              }
+            });
 						this.$scope.getRoot().hide();
 						this.getFormView().clear();
 						this.getFormView().clearValidation();
+            return false;
 					}
 				}
 			]

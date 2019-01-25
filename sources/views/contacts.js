@@ -7,12 +7,19 @@ export default class ContactsListView extends JetView {
 		const contactsList = {
 			view: "list",
 			localId: "contacts:list",
-			select: true,
+      select: true,
+      width: 300,
 			type: {
 				height: 70
 			},
 			on: {
-				onAfterSelect: id => this.setParam("id", id, true)
+				onAfterSelect: id => {
+          if(this.getSubView().getRoot().config.localId !== "contact-info") {
+            this.show('contact-info').then(() => this.setParam("id", id, true))
+          } else {
+            this.setParam("id", id, true);
+          }
+        }
 			},
 			template: contact => {
 				return `
@@ -46,7 +53,9 @@ export default class ContactsListView extends JetView {
 									icon: "wxi-plus",
 									label: "Add",
 									click: () => {
-										this.show("contact-form");
+                    this.show("contact-form");
+                    this.$$("contacts:list").unselectAll();
+                    this.setParam("id", "", true);
 									}
 								}
 							]
@@ -58,13 +67,12 @@ export default class ContactsListView extends JetView {
 		};
 	}
 	selectListItemOnInit() {
-		this.show("contact-info");
-		const firstId = contacts.getFirstId();
+    const firstId = contacts.getFirstId();
 		this.setParam("id", firstId, true);
 		this.$$("contacts:list").select(firstId);
 	}
 	init() {
-		this.$$("contacts:list").sync(contacts);
-		contacts.waitData.then(() => this.selectListItemOnInit());
+    this.$$("contacts:list").sync(contacts);
+		contacts.waitData.then(() => this.show("contact-info")).then(() => this.selectListItemOnInit());
 	}
 }

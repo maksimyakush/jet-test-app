@@ -55,6 +55,6 @@ export default class ContactInfoView extends JetView {
           </div> `;
 			}
 		};
-		return { gravity: 3, rows: [template, toolbar, { view: "template" }] };
+		return { localId: "contact-info", gravity: 3, rows: [template, toolbar, { view: "template" }] };
 	}
 }
