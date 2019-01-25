@@ -75,13 +75,11 @@ export default class FormPopupView extends JetView {
 						const { id, Date, Time } = this.getFormView().getValues();
 
 						const DueDate = `${strDateFormat(Date)} ${strTimeFormat(Time)}`;
-						console.log(DueDate);
 						if (activities.exists(id)) {
 							activities.updateItem(id, {
 								...this.getFormView().getValues(),
 								DueDate
 							});
-							console.log(activities.getItem(id));
 						} else {
 							activities.add({ ...this.getFormView().getValues(), DueDate });
 						}

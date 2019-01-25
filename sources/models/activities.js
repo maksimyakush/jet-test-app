@@ -1,5 +1,7 @@
-const dateFormat = webix.Date.strToDate("%d-%m-%Y %H:%i");
+//////// format for server Date senging
 // const strFormat = webix.Date.dateToStr("%Y-%m-%d %H:%i");
+
+const dateFormat = webix.Date.strToDate("%d-%m-%Y %H:%i");
 const strDateFormat = webix.Date.dateToStr("%Y-%m-%d");
 const strTimeFormat = webix.Date.dateToStr("%H:%i");
 
