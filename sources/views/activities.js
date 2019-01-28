@@ -8,7 +8,11 @@ import ActivityForm from "views/forms/activityform";
 export default class ActivitiesView extends JetView {
 	constructor(app, name) {
 		super(app, name);
-	}
+  }
+  urlChange() {
+    console.log('urlchange activities');
+
+  }
 	config() {
 		const testCompare = (value, filter, obj) => {
 			if (obj.ContactID != this.getParam("id", true) || !obj.ContactID) return false;
@@ -54,7 +58,10 @@ export default class ActivitiesView extends JetView {
 					this._jetPopup.showWindow(activity);
 					return false;
 				}
-			},
+      },
+      on: {
+        onAfterRender: () => console.log('onafterrender')
+      },
 			columns: [
 				{
 					id: "State",
@@ -71,7 +78,7 @@ export default class ActivitiesView extends JetView {
 						{
 							content: "selectFilter",
 
-							compare: testCompare
+							// compare: testCompare
 						}
 					],
 					sort: "string",
@@ -82,7 +89,7 @@ export default class ActivitiesView extends JetView {
 					header: ["DueDate", { content: "dateRangeFilter" }],
 					sort: "date",
 					fillspace: true,
-					format: webix.Date.dateToStr("%d/%m/%Y %H:%i")
+					format: webix.Date.dateToStr("%d %M %Y %H:%i")
 				},
 
 				{
@@ -110,13 +117,15 @@ export default class ActivitiesView extends JetView {
 		};
 		return {
 			id: "activities",
-			rows: [this.addActivityBtn, this.dataTable, ActivityForm]
+			rows: [this.addActivityBtn, this.dataTable]
 		};
 	}
 
 	ready(view) {}
 
 	init(view) {
+    activities.filter();
+    console.log('init activities')
 		this.on(this.app, "activities:reconstruct", () => {
 			view.define("rows", [this.dataTable, this.addActivityBtn]);
 			view.reconstruct();
@@ -131,11 +140,12 @@ export default class ActivitiesView extends JetView {
 				console.log(value);
 			});
 			activities.waitData.then(() => {
-				this.$$("datatable").sync(activities, function() {
-					this.filter(data => {
+        this.$$("datatable").sync(activities);
+        // this.$$("datatable").filter();
+        activities.filter(data => {
 						return data.ContactID == param;
 					});
-				});
+				// });
 			});
 		});
 	}
