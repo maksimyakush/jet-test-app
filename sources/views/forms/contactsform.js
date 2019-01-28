@@ -50,7 +50,7 @@ export default class FormPopupView extends JetView {
 							this.show("contact-info");
 						} else {
 							contacts.add(this.getRoot().getValues());
-							this.show("contact-info");
+							this.app.callEvent("contacts:selectfirstitem")
 						}
 					}
 				},
@@ -59,11 +59,11 @@ export default class FormPopupView extends JetView {
 					value: "Close",
 					click: () => {
 						if (!this.getParam("id", true)) {
-							this.app.callEvent("contacts:selectfirstitem");
+								this.app.callEvent("contacts:selectfirstitem")
 						} else {
-							this.app.callEvent("contacts:onAfterSelect");
-            }
-						return false;
+							this.show("contact-info");
+						}
+						// return false;
 					}
 				}
 			]
@@ -71,19 +71,13 @@ export default class FormPopupView extends JetView {
 		return form;
 	}
 
-	urlChange(view) {
-		if (!this.getParam("id", true)) {
-			this.$$("form:addsave").setValue("Add");
-		}
+	urlChange(view) {}
+	ready(view) {}
+	destroy() {}
+	init(view) {
+		this.$$("form:addsave").setValue("Add");
 		view.clear();
 		view.clearValidation();
-	}
-	ready(view) {
-  }
-  destroy() {
-  }
-	init(view) {
-
 		if (this.getParam("id", true)) {
 			webix.promise.all([contacts.waitData, statuses.waitData]).then(() => {
 				view.setValues(contacts.getItem(this.getParam("id", true)));
@@ -92,5 +86,3 @@ export default class FormPopupView extends JetView {
 		}
 	}
 }
-
-

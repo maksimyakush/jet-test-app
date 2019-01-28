@@ -78,3 +78,7 @@
   opacity: 0.9;
   cursor: pointer;
 }
+
+.webix_toolbar .hello {
+  background-color: #fff;
+}

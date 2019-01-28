@@ -3,19 +3,28 @@ import { contacts } from "models/contacts";
 import { activities } from "models/activities";
 import { activityTypes } from "models/activityTypes";
 import FormPopup from "./form-popup";
+import ActivityForm from "views/forms/activityform";
 
 export default class ActivitiesView extends JetView {
+	constructor(app, name) {
+		super(app, name);
+	}
 	config() {
-		const addActivityBtn = {
+		const testCompare = (value, filter, obj) => {
+			if (obj.ContactID != this.getParam("id", true) || !obj.ContactID) return false;
+			console.log(value, filter, obj);
+			return value == filter;
+		};
+		this.addActivityBtn = {
 			view: "toolbar",
-			css: "webix_dark",
-			label: "Activities",
+			localId: "activities:toolbar",
+			borderless: true,
 			cols: [
-				{ view: "label", label: "Activities" },
+				{ localId: "activities:label", view: "label", label: "Activities" },
 				{
 					view: "button",
 					value: "Add",
-					inputWidth: 100,
+					inputWidth: 150,
 					align: "right",
 					click: () => {
 						this._jetPopup.showWindow();
@@ -23,9 +32,10 @@ export default class ActivitiesView extends JetView {
 				}
 			]
 		};
-		const dataTable = {
+		this.dataTable = {
 			view: "datatable",
 			localId: "datatable",
+			borderless: true,
 			select: true,
 			scroll: "y",
 			onClick: {
@@ -56,7 +66,14 @@ export default class ActivitiesView extends JetView {
 				},
 				{
 					id: "TypeID",
-					header: ["Activity", { content: "selectFilter" }],
+					header: [
+						"Activity",
+						{
+							content: "selectFilter",
+
+							compare: testCompare
+						}
+					],
 					sort: "string",
 					collection: activityTypes
 				},
@@ -91,11 +108,35 @@ export default class ActivitiesView extends JetView {
 				}
 			]
 		};
-		return { rows: [addActivityBtn, dataTable] };
+		return {
+			id: "activities",
+			rows: [this.addActivityBtn, this.dataTable, ActivityForm]
+		};
 	}
 
-	init() {
+	ready(view) {}
+
+	init(view) {
+		this.on(this.app, "activities:reconstruct", () => {
+			view.define("rows", [this.dataTable, this.addActivityBtn]);
+			view.reconstruct();
+			this.$$("datatable").hideColumn("ContactID");
+		});
 		this.$$("datatable").sync(activities);
 		this._jetPopup = this.ui(FormPopup);
+		console.log("activitiesinit");
+		this.on(this.app, "activities:sync&&filter", param => {
+			console.log("sync");
+			this.on(this.$$("datatable"), "onBeforeFilter", (id, value, config) => {
+				console.log(value);
+			});
+			activities.waitData.then(() => {
+				this.$$("datatable").sync(activities, function() {
+					this.filter(data => {
+						return data.ContactID == param;
+					});
+				});
+			});
+		});
 	}
 }
