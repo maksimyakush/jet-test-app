@@ -1,8 +1,6 @@
 import { JetView } from "webix-jet";
-import { contacts } from "models/contacts";
+import { contacts, dpContacts } from "models/contacts";
 import { activities } from "models/activities";
-
-import ContactInfo from "views/contact-info";
 
 export default class ContactsListView extends JetView {
 	config() {
@@ -22,11 +20,7 @@ export default class ContactsListView extends JetView {
 							"Are you sure you want to remove contact? Deleting cannot be undone!",
 						callback: result => {
 							if (result) {
-								this.show("contact-info").then(() => {
-									if (this.$$("contacts:list").getSelectedId() == id)
-										this.selectFirstListItem();
-									contacts.remove(id);
-								});
+								contacts.remove(id);
 							}
 						}
 					});
@@ -61,6 +55,7 @@ export default class ContactsListView extends JetView {
 								contactsList,
 								{
 									view: "button",
+									localId: "contacts:addBtn",
 									type: "icon",
 									icon: "wxi-plus",
 									label: "Add",
@@ -81,46 +76,67 @@ export default class ContactsListView extends JetView {
 	}
 
 	urlChange(view, url) {
-		console.log("urlchangecontacts");
+		if (url[1]) {
+			if (url[1].page !== "forms.contactsform")
+				this.$$("contacts:addBtn").enable();
+			else this.$$("contacts:addBtn").disable();
+		}
 	}
 
-	selectFirstListItem() {
-		const firstId = contacts.getFirstId();
-		this.$$("contacts:list").select(firstId);
+	selectContact(id) {
+		if (id) this.$$("contacts:list").select(id);
+		else {
+			const firstId = contacts.getFirstId();
+			this.$$("contacts:list").select(firstId);
+		}
 	}
-	init() {
-		this.on(contacts, "onAfterDelete", id => {
-			activities.waitData.then(() => {
-				activities.data.each(activity => {
-					Promise.resolve().then(() =>
-						activity.ContactID == id ? activities.remove(activity.id) : ""
-					);
-				});
-			});
-		});
-		this.on(this.app, "contacts:selectfirstitem", () => {
-      this.show('contact-info').then(() => this.selectFirstListItem())
-		});
 
-		this.$$("contacts:list").sync(contacts);
-		contacts.waitData
-			.then(() => {
-				this.show("contact-info");
-			})
-			.then(() => this.selectFirstListItem());
-
+	contactsListOnAfterSelectEvent() {
 		this.on(this.$$("contacts:list"), "onAfterSelect", id => {
-			console.log("onAfterSelect");
-			console.log(
-				this.getSubView().getRoot().config.localId === "contact-info"
-			);
 			if (this.getSubView().getRoot().config.localId !== "contact-info") {
-				this.show("contact-info").then(() => {
-					this.setParam("id", id, true);
-				});
+				this.show("contact-info").then(() => this.setParam("id", id, true));
 			} else {
 				this.setParam("id", id, true);
 			}
 		});
+	}
+
+	contactsOnBeforeDeleteEvent() {
+		this.on(contacts, "onBeforeDelete", id => {
+			if (this.$$("contacts:list").getSelectedId() == id) this.selectContact();
+			activities.data.each(activity => {
+				Promise.resolve().then(() =>
+					activity.ContactID == id ? activities.remove(activity.id) : ""
+				);
+			});
+		});
+	}
+
+	dpContactsAfterInsertEvent() {
+		this.on(dpContacts, "onAfterInsert", obj => {
+			contacts.waitData.then(() => {
+				this.app.callEvent("contacts:showContactInfo&&selectContact", [obj.id]);
+			});
+		});
+	}
+
+	showContactInfoAndSelectContactEvent() {
+		this.on(this.app, "contacts:showContactInfo&&selectContact", id => {
+			this.show("contact-info").then(() => this.selectContact(id));
+		});
+	}
+
+	init() {
+		this.$$("contacts:list").sync(contacts);
+		contacts.waitData
+			.then(() => this.show("contact-info"))
+			.then(() => this.selectContact());
+
+		this.contactsListOnAfterSelectEvent();
+		this.contactsOnBeforeDeleteEvent();
+		this.dpContactsAfterInsertEvent();
+
+		//app event
+		this.showContactInfoAndSelectContactEvent();
 	}
 }

@@ -4,45 +4,15 @@ import { statuses } from "models/statuses";
 import { activities } from "models/activities";
 
 import { contactForm } from "views/forms/contactsform";
-import Activities from "views/activities";
-
+import ContactActivities from "views/activities/contactactivities";
 
 export default class ContactInfoView extends JetView {
-	destroy() {
-	}
-	urlChange() {
-    console.log("urlchangeinfo");
-		if (this.getParam("id", true)) {
-			const id = this.getParam("id", true);
-			webix.promise.all([contacts.waitData, statuses.waitData, activities.waitData]).then(() => {
-				const contact = contacts.getItem(id);
-
-				let status = statuses.getItem(contact.StatusID);
-				if (!status) {
-					status = {
-						Value: "Status is not defined",
-						Icon: ""
-					};
-				}
-				this.$$("template").setValues({
-					...contact,
-					StatusValue: status.Value,
-					StatusIcon: status.Icon
-				});
-			});
-    }
-    console.log(this.getParam('id', true));
-    this.app.callEvent('activities:sync&&filter', [this.getParam('id', true)]);
-	}
-
 	config() {
-
-    this.activities = new Activities(this.app, "");
 		const toolbar = {
 			view: "toolbar",
-      localId: "toolbar",
-      width: 150,
-      borderless: true,
+			localId: "toolbar",
+			width: 150,
+			borderless: true,
 			rows: [
 				{
 					view: "button",
@@ -52,9 +22,9 @@ export default class ContactInfoView extends JetView {
 							text: "Are you sure you want to close form?",
 							callback: result => {
 								if (result) {
-                  const id = this.getParam('id', true);
+									const id = this.getParam("id", true);
 									contacts.remove(id);
-									this.app.callEvent("contacts:selectfirstitem");
+									this.app.callEvent("contacts:showContactInfo&&selectContact");
 								}
 							}
 						});
@@ -65,10 +35,8 @@ export default class ContactInfoView extends JetView {
 					value: "Edit",
 					click: () => {
 						this.show("forms.contactsform");
-						// contactForm.setValues(contacts.getItem(this.getParam('id', true)))
 					}
-        },
-
+				}
 			]
 		};
 		const template = {
@@ -93,9 +61,12 @@ export default class ContactInfoView extends JetView {
                 <div><i class="fab fa-skype"></i> ${contact.Skype}</div>
                 <div><i class="fas fa-tag"></i> ${contact.Job}</div>
                 <div><i class="fas fa-briefcase"></i> ${contact.Company}</div>
-                <div><i class="far fa-calendar-alt"></i> ${
-									contact.Birthday
-								}</div>
+                <div><i class="far fa-calendar-alt"></i> ${webix.Date.dateToStr(
+									"%d %M %Y"
+								)(contact.Birthday)}</div>
+                <div><i class="fas fa-clock"></i> ${webix.Date.dateToStr(
+									"%d %M %Y"
+								)(contact.StartDate)}</div>
                 <div><i class="fas fa-mouse-pointer"></i> ${
 									contact.Website
 								}</div>
@@ -109,30 +80,84 @@ export default class ContactInfoView extends JetView {
 		};
 		return {
 			localId: "contact-info",
-      gravity: 3,
-      type: 'space',
-			rows: [{borderless: true, cols:[template,toolbar]}, { type: 'wide', rows:[
-        {  view:"segmented", inputWidth: '400',  multiview:true, options:[
-          {id:"activities", value:"Activities"},
-          {id:"2", value:"Files"},
-            ]
-        },
-        {cells:[
-          new Activities(this.app, ""),
-          { id:"2", template: "Empty Tab 1"},
-          ]
-        },
+			gravity: 3,
+			type: "space",
+			rows: [
+				{ borderless: true, cols: [template, toolbar] },
+				{
+					type: "wide",
+					rows: [
+						{
+							view: "segmented",
+							inputWidth: "400",
+							multiview: true,
+							options: [
+								{ id: "activities", value: "Activities" },
+								{ id: "2", value: "Files" }
+							]
+						},
+						{
+							cells: [
+								ContactActivities,
+								{
+									id: "2",
 
-      ] }]
+									view: "form",
+									autoheight: false,
+									rows: [
+										{
+											view: "uploader",
+											value: "Upload file",
+											name: "files",
+											link: "mylist",
+											autosend: true,
+											multiple: false,
+											upload: "/files"
+										},
+										{
+											view: "list",
+											id: "mylist",
+											type: "uploader",
+											autoheight: true,
+											borderless: true
+										},
+										{
+											view: "button",
+											label: "Get value",
+											click: function() {
+												var text = this.getParentView().getValues();
+												text = JSON.stringify(text, "\n");
+												webix.message("<pre>" + text + "</pre>");
+											}
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
 		};
 	}
-	ready() {
-    this.app.callEvent('activities:reconstruct');
 
-  }
-	init() {
-
-console.log('init');
-
+	urlChange() {
+		if (this.getParam("id", true)) {
+			const id = this.getParam("id", true);
+			webix.promise.all([contacts.waitData, statuses.waitData]).then(() => {
+				const contact = contacts.getItem(id);
+				let status = statuses.getItem(contact.StatusID);
+				if (!status) {
+					status = {
+						Value: "Status is not defined",
+						Icon: ""
+					};
+				}
+				this.$$("template").setValues({
+					...contact,
+					StatusValue: status.Value,
+					StatusIcon: status.Icon
+				});
+			});
+		}
 	}
 }

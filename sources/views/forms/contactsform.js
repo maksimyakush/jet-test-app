@@ -7,34 +7,153 @@ import { activityTypes } from "models/activityTypes";
 
 export default class FormPopupView extends JetView {
 	config() {
-		const form = {
+		const contactsFormLabel = {
+			view: "label",
+			label: "Add(Edit) Contact",
+			marginX: 10,
+			localId: "contacts:formLabel"
+		};
+		const contactsForm = {
 			view: "form",
 			autoheight: false,
-			localId: "contact:form",
-
+			localId: "contacts:form",
+			elementsConfig: {
+				inputWidth: 300,
+				labelWidth: 100
+			},
 			elements: [
 				{
-					view: "text",
-					label: "First Name",
-					name: "FirstName",
-					invalidMessage: "Fill the details field!"
+					cols: [
+						{
+							view: "text",
+							label: "First Name",
+							name: "FirstName",
+							invalidMessage: "Fill the details field!"
+						},
+						{
+							view: "text",
+							label: "Last Name",
+							name: "LastName"
+						}
+					]
 				},
 				{
-					view: "text",
-					label: "Last Name",
-					name: "LastName"
+					cols: [
+						{
+							view: "text",
+							label: "Email",
+							name: "Email"
+						},
+						{
+							view: "datepicker",
+							label: "Joining Date",
+							name: "StartDate",
+							format: webix.Date.dateToStr("%d %M %Y")
+							// invalidMessage: "Fill the details field!",
+							// required: true
+						}
+					]
 				},
 				{
-					view: "text",
-					label: "Email",
-					name: "Email"
+					cols: [
+						{
+							view: "richselect",
+							label: "Status",
+							name: "StatusID",
+							options: statuses
+						},
+						{
+							view: "text",
+							label: "Job",
+							name: "Job"
+						}
+					]
 				},
 				{
-					view: "datepicker",
-					label: "Joining Date",
-					name: "StartDate"
-					// invalidMessage: "Fill the details field!",
-					// required: true
+					cols: [
+						{
+							view: "text",
+							label: "Company",
+							name: "Company"
+						},
+						{
+							view: "text",
+							label: "Website",
+							name: "Website"
+						}
+					]
+				},
+				{
+					cols: [
+						{
+							view: "text",
+							label: "Address",
+							name: "Address"
+						},
+						{
+							view: "text",
+							label: "Skype",
+							name: "Skype"
+						}
+					]
+				},
+				{
+					cols: [
+						{
+							view: "text",
+							label: "Phone",
+							name: "Phone"
+						},
+						{
+							view: "datepicker",
+							label: "Birthday",
+							name: "Birthday",
+							format: webix.Date.dateToStr("%d %M %Y")
+
+							// invalidMessage: "Fill the details field!",
+							// required: true
+						}
+					]
+				},
+				{
+					cols: [
+						{
+							id: "preview",
+							view: "template",
+							template: "<img src=#Photo# />",
+							name: "Photo",
+							height: 100,
+							width: 100
+						},
+						{
+							id: "btnUploadPhoto",
+							view: "uploader",
+							multiple: false,
+							autosend: false,
+							accept: "image/png, image/gif, image/jpeg",
+							label: "Select Photo",
+							labelWidth: 150,
+							on: {
+								onAfterFileAdd: file => {
+									const reader = new FileReader();
+									console.log(reader);
+									reader.addEventListener("load", event => {
+										const base64 = reader.result;
+										$$("preview").setValues({ Photo: base64 });
+										this.$$("contact:form").setValues({
+											...this.$$("contact:form").getValues(),
+											Photo: base64
+										});
+									});
+
+									if (file) {
+										reader.readAsDataURL(file.file);
+									}
+									return false;
+								}
+							}
+						}
+					]
 				},
 
 				{
@@ -45,12 +164,11 @@ export default class FormPopupView extends JetView {
 						if (this.getParam("id", true)) {
 							contacts.updateItem(
 								this.getParam("id", true),
-								this.getRoot().getValues()
+								this.$$("contacts:form").getValues()
 							);
 							this.show("contact-info");
 						} else {
-							contacts.add(this.getRoot().getValues());
-							this.app.callEvent("contacts:selectfirstitem")
+							contacts.add(this.$$("contacts:form").getValues());
 						}
 					}
 				},
@@ -58,30 +176,45 @@ export default class FormPopupView extends JetView {
 					view: "button",
 					value: "Close",
 					click: () => {
-						if (!this.getParam("id", true)) {
-								this.app.callEvent("contacts:selectfirstitem")
-						} else {
-							this.show("contact-info");
-						}
-						// return false;
+						webix.confirm({
+							text:
+								"Are you sure you want to remove this activity? Deleting cannot be undone!",
+							callback: result => {
+								if (result) {
+									if (!this.getParam("id", true)) {
+										this.app.callEvent(
+											"contacts:showContactInfo&&selectContact"
+										);
+									} else {
+										this.show("contact-info");
+									}
+								}
+							}
+						});
+
+						return false;
 					}
 				}
 			]
 		};
-		return form;
+		return { rows: [contactsFormLabel, contactsForm] };
 	}
 
-	urlChange(view) {}
-	ready(view) {}
-	destroy() {}
 	init(view) {
 		this.$$("form:addsave").setValue("Add");
-		view.clear();
-		view.clearValidation();
+		this.$$("contacts:formLabel").setValue("Add Contact");
+		this.$$("contacts:form").clear();
+		this.$$("contacts:form").clearValidation();
 		if (this.getParam("id", true)) {
 			webix.promise.all([contacts.waitData, statuses.waitData]).then(() => {
-				view.setValues(contacts.getItem(this.getParam("id", true)));
+				$$("preview").setValues({
+					Photo: contacts.getItem(this.getParam("id", true)).Photo
+				});
+				this.$$("contacts:form").setValues(
+					contacts.getItem(this.getParam("id", true))
+				);
 				this.$$("form:addsave").setValue("Save");
+				this.$$("contacts:formLabel").setValue("Edit Contact");
 			});
 		}
 	}

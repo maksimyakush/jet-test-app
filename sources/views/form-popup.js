@@ -4,10 +4,9 @@ import { activities } from "models/activities";
 import { activityTypes } from "models/activityTypes";
 import activityForm from "views/forms/activityform";
 
-
 export default class FormPopupView extends JetView {
 	config() {
-    this.activityForm = new activityForm(this.app, "", this);
+		this.activityForm = new activityForm(this.app, "", this);
 		return {
 			view: "popup",
 			locaId: "window",
@@ -20,11 +19,9 @@ export default class FormPopupView extends JetView {
 	}
 	showWindow(item) {
 		this.getRoot().show();
-    this.activityForm.onShow(item);
-
-
-  }
-  init(view, url) {
-    console.log(url);
-  }
+		this.activityForm.onShow(item);
+	}
+	init(view, url) {
+		console.log(url);
+	}
 }
