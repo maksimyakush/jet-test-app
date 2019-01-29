@@ -2,9 +2,6 @@ import { JetView } from "webix-jet";
 import { contacts } from "models/contacts";
 import { statuses } from "models/statuses";
 
-import { activities } from "models/activities";
-import { activityTypes } from "models/activityTypes";
-
 export default class FormPopupView extends JetView {
 	config() {
 		const contactsFormLabel = {
@@ -19,7 +16,14 @@ export default class FormPopupView extends JetView {
 			localId: "contacts:form",
 			elementsConfig: {
 				inputWidth: 300,
-				labelWidth: 100
+				labelWidth: 100,
+				marginY: 200
+			},
+			rules: {
+				FirstName: webix.rules.isNotEmpty,
+				LastName: webix.rules.isNotEmpty,
+				Email: webix.rules.isNotEmpty,
+				StatusID: webix.rules.isNotEmpty
 			},
 			elements: [
 				{
@@ -28,12 +32,16 @@ export default class FormPopupView extends JetView {
 							view: "text",
 							label: "First Name",
 							name: "FirstName",
-							invalidMessage: "Fill the details field!"
+							required: true,
+							invalidMessage: "First Name is requred!"
 						},
 						{
 							view: "text",
 							label: "Last Name",
-							name: "LastName"
+							name: "LastName",
+							height: 50,
+							required: true,
+							invalidMessage: "Last Name is requred!"
 						}
 					]
 				},
@@ -42,15 +50,16 @@ export default class FormPopupView extends JetView {
 						{
 							view: "text",
 							label: "Email",
-							name: "Email"
+							name: "Email",
+							type: "email",
+							required: true,
+							invalidMessage: "Email is requred!"
 						},
 						{
 							view: "datepicker",
 							label: "Joining Date",
 							name: "StartDate",
 							format: webix.Date.dateToStr("%d %M %Y")
-							// invalidMessage: "Fill the details field!",
-							// required: true
 						}
 					]
 				},
@@ -60,7 +69,9 @@ export default class FormPopupView extends JetView {
 							view: "richselect",
 							label: "Status",
 							name: "StatusID",
-							options: statuses
+							options: statuses,
+							required: true,
+							invalidMessage: "Select your status!"
 						},
 						{
 							view: "text",
@@ -109,49 +120,79 @@ export default class FormPopupView extends JetView {
 							label: "Birthday",
 							name: "Birthday",
 							format: webix.Date.dateToStr("%d %M %Y")
-
-							// invalidMessage: "Fill the details field!",
-							// required: true
 						}
 					]
 				},
 				{
+					margin: 10,
 					cols: [
 						{
 							id: "preview",
 							view: "template",
-							template: "<img src=#Photo# />",
+							template: obj =>
+								`<img src=${obj.Photo ||
+									"https://avatars1.githubusercontent.com/u/4639085?s=200&v=4"} width="100" height="100" style="max-width: 100%; max-height: 100%;" alt="Contact Image"} />`,
 							name: "Photo",
 							height: 100,
 							width: 100
 						},
 						{
-							id: "btnUploadPhoto",
-							view: "uploader",
-							multiple: false,
-							autosend: false,
-							accept: "image/png, image/gif, image/jpeg",
-							label: "Select Photo",
-							labelWidth: 150,
-							on: {
-								onAfterFileAdd: file => {
-									const reader = new FileReader();
-									console.log(reader);
-									reader.addEventListener("load", event => {
-										const base64 = reader.result;
-										$$("preview").setValues({ Photo: base64 });
-										this.$$("contact:form").setValues({
-											...this.$$("contact:form").getValues(),
-											Photo: base64
-										});
-									});
+							elementsConfig: { inputWidth: 150 },
 
-									if (file) {
-										reader.readAsDataURL(file.file);
+							rows: [
+								{
+									localId: "contactsform:uploadbtn",
+									view: "uploader",
+									multiple: false,
+									autosend: false,
+									accept: "image/png, image/gif, image/jpeg, image/jpg",
+									label: "Select Photo",
+									labelWidth: 150,
+									on: {
+										onBeforeFileAdd: file => {
+											const reader = new FileReader();
+											const type = file.type.toLowerCase();
+											if (
+												type != "png" &&
+												type != "jpeg" &&
+												type != "gif" &&
+												type != "jpg"
+											) {
+												webix.message({
+													text: "Invalid photo",
+													type: "error"
+												});
+												return;
+											}
+											reader.addEventListener("load", event => {
+												const base64 = reader.result;
+												$$("preview").setValues({ Photo: base64 });
+												this.$$("contacts:form").setValues({
+													...this.$$("contacts:form").getValues(),
+													Photo: base64
+												});
+											});
+											if (file) {
+												reader.readAsDataURL(file.file);
+											}
+										}
 									}
-									return false;
+								},
+								{
+									view: "button",
+									value: "Delete",
+									click: () => {
+										const { Photo } = this.$$("contacts:form").getValues();
+										if (Photo) {
+											this.$$("contacts:form").setValues({
+												...this.$$("contacts:form").getValues(),
+												Photo: ""
+											});
+											$$("preview").setValues({ Photo: "" });
+										}
+									}
 								}
-							}
+							]
 						}
 					]
 				},
@@ -161,6 +202,7 @@ export default class FormPopupView extends JetView {
 					localId: "form:addsave",
 					value: "Add(*save)",
 					click: () => {
+						if (!this.$$("contacts:form").validate()) return;
 						if (this.getParam("id", true)) {
 							contacts.updateItem(
 								this.getParam("id", true),
@@ -191,7 +233,6 @@ export default class FormPopupView extends JetView {
 								}
 							}
 						});
-
 						return false;
 					}
 				}
@@ -200,22 +241,21 @@ export default class FormPopupView extends JetView {
 		return { rows: [contactsFormLabel, contactsForm] };
 	}
 
-	init(view) {
+	init() {
 		this.$$("form:addsave").setValue("Add");
 		this.$$("contacts:formLabel").setValue("Add Contact");
 		this.$$("contacts:form").clear();
 		this.$$("contacts:form").clearValidation();
-		if (this.getParam("id", true)) {
-			webix.promise.all([contacts.waitData, statuses.waitData]).then(() => {
-				$$("preview").setValues({
-					Photo: contacts.getItem(this.getParam("id", true)).Photo
-				});
-				this.$$("contacts:form").setValues(
-					contacts.getItem(this.getParam("id", true))
-				);
-				this.$$("form:addsave").setValue("Save");
-				this.$$("contacts:formLabel").setValue("Edit Contact");
+
+		webix.promise.all([contacts.waitData, statuses.waitData]).then(() => {
+			$$("preview").setValues({
+				Photo: contacts.getItem(this.getParam("id", true)).Photo
 			});
-		}
+			this.$$("contacts:form").setValues(
+				contacts.getItem(this.getParam("id", true))
+			);
+			this.$$("form:addsave").setValue("Save");
+			this.$$("contacts:formLabel").setValue("Edit Contact");
+		});
 	}
 }

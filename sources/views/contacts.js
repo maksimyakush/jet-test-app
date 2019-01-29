@@ -17,10 +17,11 @@ export default class ContactsListView extends JetView {
 				"wxi-close": (e, id) => {
 					webix.confirm({
 						text:
-							"Are you sure you want to remove contact? Deleting cannot be undone!",
+							"Are you sure you want to exit? The form data is not saved yet!",
 						callback: result => {
 							if (result) {
 								contacts.remove(id);
+								if (contacts.count() < 1) this.show("empty");
 							}
 						}
 					});
@@ -60,7 +61,7 @@ export default class ContactsListView extends JetView {
 									icon: "wxi-plus",
 									label: "Add",
 									click: () => {
-										this.show("forms.contactsform").then(() => {
+										this.show("contactsform").then(() => {
 											this.$$("contacts:list").unselectAll();
 											this.setParam("id", "", true);
 										});
@@ -77,13 +78,16 @@ export default class ContactsListView extends JetView {
 
 	urlChange(view, url) {
 		if (url[1]) {
-			if (url[1].page !== "forms.contactsform")
-				this.$$("contacts:addBtn").enable();
+			if (url[1].page !== "contactsform") this.$$("contacts:addBtn").enable();
 			else this.$$("contacts:addBtn").disable();
 		}
 	}
 
 	selectContact(id) {
+		if (!contacts.count()) {
+			this.show("empty");
+			return;
+		}
 		if (id) this.$$("contacts:list").select(id);
 		else {
 			const firstId = contacts.getFirstId();

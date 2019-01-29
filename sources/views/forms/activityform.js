@@ -117,7 +117,7 @@ export default class ActivityFormView extends JetView {
 					click: () => {
 						if (!this.$$("activities:form").validate()) return;
 						this.addActivity();
-						if(this.Popup) this.Popup.getRoot().hide();
+						if (this.Popup) this.Popup.getRoot().hide();
 					}
 				},
 				{
@@ -126,7 +126,7 @@ export default class ActivityFormView extends JetView {
 					click: () => {
 						this.$$("activities:form").clear();
 						this.$$("activities:form").clearValidation();
-						if(this.Popup) this.Popup.getRoot().hide();
+						if (this.Popup) this.Popup.getRoot().hide();
 					}
 				}
 			]
@@ -142,8 +142,8 @@ export default class ActivityFormView extends JetView {
 				activitiesForm
 			]
 		};
-  }
-  init() {
-    if(!this.Popup) this.onShow()
-  }
+	}
+	init() {
+		if (!this.Popup) this.onShow();
+	}
 }

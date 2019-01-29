@@ -1,10 +1,8 @@
 import { JetView } from "webix-jet";
 import { contacts } from "models/contacts";
 import { statuses } from "models/statuses";
-import { activities } from "models/activities";
-
-import { contactForm } from "views/forms/contactsform";
 import ContactActivities from "views/activities/contactactivities";
+import ContactFiles from "views/contactfiles";
 
 export default class ContactInfoView extends JetView {
 	config() {
@@ -19,7 +17,8 @@ export default class ContactInfoView extends JetView {
 					value: "Delete",
 					click: () => {
 						webix.confirm({
-							text: "Are you sure you want to close form?",
+							text:
+								"Are you sure you want to exit? The form data is not saved yet!",
 							callback: result => {
 								if (result) {
 									const id = this.getParam("id", true);
@@ -34,7 +33,7 @@ export default class ContactInfoView extends JetView {
 					view: "button",
 					value: "Edit",
 					click: () => {
-						this.show("forms.contactsform");
+						this.show("contactsform");
 					}
 				}
 			]
@@ -93,46 +92,11 @@ export default class ContactInfoView extends JetView {
 							multiview: true,
 							options: [
 								{ id: "activities", value: "Activities" },
-								{ id: "2", value: "Files" }
+								{ id: "files", value: "Files" }
 							]
 						},
 						{
-							cells: [
-								ContactActivities,
-								{
-									id: "2",
-
-									view: "form",
-									autoheight: false,
-									rows: [
-										{
-											view: "uploader",
-											value: "Upload file",
-											name: "files",
-											link: "mylist",
-											autosend: true,
-											multiple: false,
-											upload: "/files"
-										},
-										{
-											view: "list",
-											id: "mylist",
-											type: "uploader",
-											autoheight: true,
-											borderless: true
-										},
-										{
-											view: "button",
-											label: "Get value",
-											click: function() {
-												var text = this.getParentView().getValues();
-												text = JSON.stringify(text, "\n");
-												webix.message("<pre>" + text + "</pre>");
-											}
-										}
-									]
-								}
-							]
+							cells: [ContactActivities, ContactFiles]
 						}
 					]
 				}
