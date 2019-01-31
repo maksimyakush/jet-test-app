@@ -18,7 +18,7 @@ export default class ContactInfoView extends JetView {
 					click: () => {
 						webix.confirm({
 							text:
-								"Are you sure you want to exit? The form data is not saved yet!",
+								"Are you sure you want to remove the contact? Removing cannot be undone!",
 							callback: result => {
 								if (result) {
 									const id = this.getParam("id", true);
@@ -96,7 +96,10 @@ export default class ContactInfoView extends JetView {
 							]
 						},
 						{
-							cells: [ContactActivities, ContactFiles]
+							cells: [
+								{ id: "activities", $subview: ContactActivities },
+								{ id: "files", $subview: ContactFiles }
+							]
 						}
 					]
 				}

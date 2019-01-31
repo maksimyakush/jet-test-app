@@ -1,6 +1,7 @@
 import { JetView } from "webix-jet";
 import { contacts, dpContacts } from "models/contacts";
 import { activities } from "models/activities";
+import { cutString } from "helpers/helpers.js";
 
 export default class ContactsListView extends JetView {
 	config() {
@@ -17,7 +18,7 @@ export default class ContactsListView extends JetView {
 				"wxi-close": (e, id) => {
 					webix.confirm({
 						text:
-							"Are you sure you want to exit? The form data is not saved yet!",
+							"Are you sure you want to remove the contact? Removing cannot be undone!",
 						callback: result => {
 							if (result) {
 								contacts.remove(id);
@@ -34,11 +35,16 @@ export default class ContactsListView extends JetView {
         <img class="user-listitem__img" alt="Contact image" src=${contact.Photo ||
 					"https://avatars1.githubusercontent.com/u/4639085?s=200&v=4"} width="50" height="50">
           <div class="user-listitem__info">
-            <div class="user-listitem__name">${contact.FirstName ||
-							"Unknown"} ${contact.LastName || "Unknown"}</div>
-            <sub class="user-listitem__email">${contact.Email}</sub>
+            <div class="user-listitem__name">${cutString(
+		`${contact.FirstName} ${contact.LastName}`,
+		21
+	)}</div>
+            <sub class="user-listitem__email">${cutString(
+		`${contact.Email}`,
+		21
+	)}</sub>
           </div>
-          <i class="webix_icon wxi-close"></i>
+          <i class="webix_icon wxi-close" style:{"minWidth": 60px}></i>
         </div>
         `;
 			}
@@ -76,9 +82,13 @@ export default class ContactsListView extends JetView {
 		};
 	}
 
-	urlChange(view, url) {
-		if (url[1]) {
-			if (url[1].page !== "contactsform") this.$$("contacts:addBtn").enable();
+	urlChange() {
+		if (this.getSubView()) {
+			if (
+				this.getSubView().getRoot().config.localId === "contact-info" ||
+				contacts.count() < 1
+			)
+				this.$$("contacts:addBtn").enable();
 			else this.$$("contacts:addBtn").disable();
 		}
 	}

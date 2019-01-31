@@ -4,7 +4,6 @@ import { files } from "models/files";
 export default class ContactFilesView extends JetView {
 	config() {
 		return {
-			id: "files",
 			rows: [
 				{
 					view: "datatable",

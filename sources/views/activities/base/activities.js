@@ -10,7 +10,7 @@ export default class ActivitiesView extends JetView {
 	}
 
 	config() {
-		this.addActivityBtn = {
+		const addActivityBtn = {
 			view: "toolbar",
 			localId: "activities:toolbar",
 			borderless: true,
@@ -26,7 +26,7 @@ export default class ActivitiesView extends JetView {
 			]
 		};
 
-		this.dataTable = {
+		const dataTable = {
 			view: "datatable",
 			localId: "datatable",
 			borderless: true,
@@ -36,7 +36,7 @@ export default class ActivitiesView extends JetView {
 				"wxi-trash": (e, id) => {
 					webix.confirm({
 						text:
-							"Are you sure you want to remove this activity? Deleting cannot be undone!",
+							"Are you sure you want to remove this activity? Removing cannot be undone!",
 						callback(result) {
 							if (result) activities.remove(id);
 						}
@@ -101,9 +101,13 @@ export default class ActivitiesView extends JetView {
 				}
 			]
 		};
+		if (this.getParentView().getRoot().config.localId == "contact-info") {
+			return {
+				rows: [dataTable, addActivityBtn]
+			};
+		}
 		return {
-			id: "activities",
-			rows: [this.addActivityBtn, this.dataTable]
+			rows: [addActivityBtn, dataTable]
 		};
 	}
 

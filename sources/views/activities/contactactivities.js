@@ -11,9 +11,7 @@ export default class ContactActivitiesView extends ActivitiesView {
 		activities.filter(data => data.ContactID == this.getParam("id", true));
 	}
 
-	init(view) {
-		view.define("rows", [this.dataTable, this.addActivityBtn]);
-		view.reconstruct();
+	init() {
 		this.$$("datatable").sync(activities);
 		this.$$("activities:label").hide();
 		this.$$("datatable").hideColumn("ContactID");

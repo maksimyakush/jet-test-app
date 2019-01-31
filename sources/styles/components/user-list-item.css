@@ -6,9 +6,13 @@
 .webix_list_item .user-listitem {
   display: grid;
   height: 100%;
-  grid-template-columns: min-content max-content 1fr;
+  grid-template-columns: min-content 1fr max-content;
   align-items: center;
   grid-gap: 1rem;
+}
+
+.webix_list_item .user-listitem__info {
+  overflow: hidden;
 }
 
 .webix_list_item .user-listitem__img {

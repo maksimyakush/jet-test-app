@@ -127,7 +127,7 @@ export default class FormPopupView extends JetView {
 					margin: 10,
 					cols: [
 						{
-							id: "preview",
+							localId: "contactsform:previewImg",
 							view: "template",
 							template: obj =>
 								`<img src=${obj.Photo ||
@@ -166,7 +166,9 @@ export default class FormPopupView extends JetView {
 											}
 											reader.addEventListener("load", event => {
 												const base64 = reader.result;
-												$$("preview").setValues({ Photo: base64 });
+												this.$$("contactsform:previewImg").setValues({
+													Photo: base64
+												});
 												this.$$("contacts:form").setValues({
 													...this.$$("contacts:form").getValues(),
 													Photo: base64
@@ -188,7 +190,9 @@ export default class FormPopupView extends JetView {
 												...this.$$("contacts:form").getValues(),
 												Photo: ""
 											});
-											$$("preview").setValues({ Photo: "" });
+											this.$$("contactsform:previewImg").setValues({
+												Photo: ""
+											});
 										}
 									}
 								}
@@ -219,8 +223,7 @@ export default class FormPopupView extends JetView {
 					value: "Close",
 					click: () => {
 						webix.confirm({
-							text:
-								"Are you sure you want to remove this activity? Deleting cannot be undone!",
+							text: "Are you sure you want to exit? Removing cannot be undone!",
 							callback: result => {
 								if (result) {
 									if (!this.getParam("id", true)) {
@@ -248,7 +251,7 @@ export default class FormPopupView extends JetView {
 		this.$$("contacts:form").clearValidation();
 
 		webix.promise.all([contacts.waitData, statuses.waitData]).then(() => {
-			$$("preview").setValues({
+			this.$$("contactsform:previewImg").setValues({
 				Photo: contacts.getItem(this.getParam("id", true)).Photo
 			});
 			this.$$("contacts:form").setValues(
