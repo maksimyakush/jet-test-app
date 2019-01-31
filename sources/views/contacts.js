@@ -1,18 +1,33 @@
 import { JetView } from "webix-jet";
-import { contacts } from "models/contacts";
-import ContactInfo from "views/contact-info";
+import { contacts, dpContacts } from "models/contacts";
+import { activities } from "models/activities";
+import { cutString } from "helpers/helpers.js";
 
 export default class ContactsListView extends JetView {
 	config() {
 		const contactsList = {
 			view: "list",
-			localId: "list",
+			localId: "contacts:list",
 			select: true,
+			width: 300,
 			type: {
 				height: 70
 			},
-			on: {
-				onAfterSelect: id => this.setParam("id", id, true)
+
+			onClick: {
+				"wxi-close": (e, id) => {
+					webix.confirm({
+						text:
+							"Are you sure you want to remove the contact? Removing cannot be undone!",
+						callback: result => {
+							if (result) {
+								contacts.remove(id);
+								if (contacts.count() < 1) this.show("empty");
+							}
+						}
+					});
+					return false;
+				}
 			},
 			template: contact => {
 				return `
@@ -20,10 +35,16 @@ export default class ContactsListView extends JetView {
         <img class="user-listitem__img" alt="Contact image" src=${contact.Photo ||
 					"https://avatars1.githubusercontent.com/u/4639085?s=200&v=4"} width="50" height="50">
           <div class="user-listitem__info">
-          <div class="user-listitem__name">${contact.FirstName ||
-						"Unknown"} ${contact.LastName || "Unknown"}</div>
-          <sub class="user-listitem__email">${contact.Email}</sub>
+            <div class="user-listitem__name">${cutString(
+		`${contact.FirstName} ${contact.LastName}`,
+		21
+	)}</div>
+            <sub class="user-listitem__email">${cutString(
+		`${contact.Email}`,
+		21
+	)}</sub>
           </div>
+          <i class="webix_icon wxi-close" style:{"minWidth": 60px}></i>
         </div>
         `;
 			}
@@ -32,20 +53,104 @@ export default class ContactsListView extends JetView {
 			rows: [
 				{
 					view: "toolbar",
-					css: "webix_dark",
 					cols: [{ view: "label", label: "Contacts" }]
 				},
-				{ cols: [contactsList, { $subview: ContactInfo }] }
+				{
+					cols: [
+						{
+							rows: [
+								contactsList,
+								{
+									view: "button",
+									localId: "contacts:addBtn",
+									type: "icon",
+									icon: "wxi-plus",
+									label: "Add",
+									click: () => {
+										this.show("contactsform").then(() => {
+											this.$$("contacts:list").unselectAll();
+											this.setParam("id", "", true);
+										});
+									}
+								}
+							]
+						},
+						{ $subview: true }
+					]
+				}
 			]
 		};
 	}
-	selectListItemOnInit() {
-		const firstId = contacts.getFirstId();
-		this.setParam("id", firstId, true);
-		this.$$("list").select(firstId);
+
+	urlChange() {
+		if (this.getSubView()) {
+			if (
+				this.getSubView().getRoot().config.localId === "contact-info" ||
+				contacts.count() < 1
+			)
+				this.$$("contacts:addBtn").enable();
+			else this.$$("contacts:addBtn").disable();
+		}
 	}
+
+	selectContact(id) {
+		if (!contacts.count()) {
+			this.show("empty");
+			return;
+		}
+		if (id) this.$$("contacts:list").select(id);
+		else {
+			const firstId = contacts.getFirstId();
+			this.$$("contacts:list").select(firstId);
+		}
+	}
+
+	contactsListOnAfterSelectEvent() {
+		this.on(this.$$("contacts:list"), "onAfterSelect", id => {
+			if (this.getSubView().getRoot().config.localId !== "contact-info") {
+				this.show("contact-info").then(() => this.setParam("id", id, true));
+			} else {
+				this.setParam("id", id, true);
+			}
+		});
+	}
+
+	contactsOnBeforeDeleteEvent() {
+		this.on(contacts, "onBeforeDelete", id => {
+			if (this.$$("contacts:list").getSelectedId() == id) this.selectContact();
+			activities.data.each(activity => {
+				Promise.resolve().then(() =>
+					activity.ContactID == id ? activities.remove(activity.id) : ""
+				);
+			});
+		});
+	}
+
+	dpContactsAfterInsertEvent() {
+		this.on(dpContacts, "onAfterInsert", obj => {
+			contacts.waitData.then(() => {
+				this.app.callEvent("contacts:showContactInfo&&selectContact", [obj.id]);
+			});
+		});
+	}
+
+	showContactInfoAndSelectContactEvent() {
+		this.on(this.app, "contacts:showContactInfo&&selectContact", id => {
+			this.show("contact-info").then(() => this.selectContact(id));
+		});
+	}
+
 	init() {
-		this.$$("list").sync(contacts);
-		contacts.waitData.then(() => this.selectListItemOnInit());
+		this.$$("contacts:list").sync(contacts);
+		contacts.waitData
+			.then(() => this.show("contact-info"))
+			.then(() => this.selectContact());
+
+		this.contactsListOnAfterSelectEvent();
+		this.contactsOnBeforeDeleteEvent();
+		this.dpContactsAfterInsertEvent();
+
+		//app event
+		this.showContactInfoAndSelectContactEvent();
 	}
 }

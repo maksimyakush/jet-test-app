@@ -6,13 +6,33 @@
 .webix_list_item .user-listitem {
   display: grid;
   height: 100%;
-  grid-template-columns: min-content max-content;
+  grid-template-columns: min-content 1fr max-content;
   align-items: center;
   grid-gap: 1rem;
+}
+
+.webix_list_item .user-listitem__info {
+  overflow: hidden;
 }
 
 .webix_list_item .user-listitem__img {
   border-radius: 50%;
   max-width: 50px;
   max-height: 50px;
+}
+
+.webix_list_item .wxi-close {
+  justify-self: end;
+  transition: 0.1s;
+}
+
+.webix_list_item .wxi-close:hover {
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+.webix_list_item .wxi-close:active {
+  transform: translateY(1px);
+  opacity: 0.9;
+  cursor: pointer;
 }

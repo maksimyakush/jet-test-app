@@ -2,37 +2,41 @@ import { JetView } from "webix-jet";
 import { contacts } from "models/contacts";
 import { activities } from "models/activities";
 import { activityTypes } from "models/activityTypes";
-import FormPopup from "./form-popup";
+import FormPopup from "views/form-popup";
 
 export default class ActivitiesView extends JetView {
+	constructor(app, name) {
+		super(app, name);
+	}
+
 	config() {
 		const addActivityBtn = {
 			view: "toolbar",
-			css: "webix_dark",
-			label: "Activities",
+			localId: "activities:toolbar",
+			borderless: true,
 			cols: [
-				{ view: "label", label: "Activities" },
+				{ localId: "activities:label", view: "label", label: "Activities" },
 				{
 					view: "button",
 					value: "Add",
-					inputWidth: 100,
+					inputWidth: 150,
 					align: "right",
-					click: () => {
-						this._jetPopup.showWindow();
-					}
+					click: () => this._jetPopup.showWindow()
 				}
 			]
 		};
+
 		const dataTable = {
 			view: "datatable",
 			localId: "datatable",
+			borderless: true,
 			select: true,
 			scroll: "y",
 			onClick: {
 				"wxi-trash": (e, id) => {
 					webix.confirm({
 						text:
-							"Are you sure you want to remove this activity? Deleting cannot be undone!",
+							"Are you sure you want to remove this activity? Removing cannot be undone!",
 						callback(result) {
 							if (result) activities.remove(id);
 						}
@@ -45,6 +49,7 @@ export default class ActivitiesView extends JetView {
 					return false;
 				}
 			},
+
 			columns: [
 				{
 					id: "State",
@@ -56,7 +61,12 @@ export default class ActivitiesView extends JetView {
 				},
 				{
 					id: "TypeID",
-					header: ["Activity", { content: "selectFilter" }],
+					header: [
+						"Activity",
+						{
+							content: "selectFilter"
+						}
+					],
 					sort: "string",
 					collection: activityTypes
 				},
@@ -65,7 +75,7 @@ export default class ActivitiesView extends JetView {
 					header: ["DueDate", { content: "dateRangeFilter" }],
 					sort: "date",
 					fillspace: true,
-					format: webix.Date.dateToStr("%d/%m/%Y %H:%i")
+					format: webix.Date.dateToStr("%d %M %Y %H:%i")
 				},
 
 				{
@@ -91,10 +101,18 @@ export default class ActivitiesView extends JetView {
 				}
 			]
 		};
-		return { rows: [addActivityBtn, dataTable] };
+		if (this.getParentView().getRoot().config.localId == "contact-info") {
+			return {
+				rows: [dataTable, addActivityBtn]
+			};
+		}
+		return {
+			rows: [addActivityBtn, dataTable]
+		};
 	}
 
 	init() {
+		activities.filter();
 		this.$$("datatable").sync(activities);
 		this._jetPopup = this.ui(FormPopup);
 	}
