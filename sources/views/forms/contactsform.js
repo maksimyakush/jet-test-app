@@ -223,7 +223,7 @@ export default class FormPopupView extends JetView {
 					value: "Close",
 					click: () => {
 						webix.confirm({
-							text: "Are you sure you want to exit? Removing cannot be undone!",
+							text: "Are you sure you want to exit?",
 							callback: result => {
 								if (result) {
 									if (!this.getParam("id", true)) {
