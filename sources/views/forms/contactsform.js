@@ -19,10 +19,8 @@ export default class ContactsFormView extends JetView {
 			autoheight: false,
 			localId: "contacts:form",
 			elementsConfig: {
-				// inputWidth: 300,
 				margin: 50,
 				labelWidth: 150
-				// marginY: 200
 			},
 			rules: {
 				FirstName: webix.rules.isNotEmpty,

@@ -186,10 +186,29 @@ export default class ActivitiesView extends JetView {
 		);
 	}
 
+	activitiesAfterAddEvent() {
+		this.on(activities, "onAfterAdd", () => {
+			this.$$("datatable").filterByAll();
+		});
+	}
+	activitiesAfterDeleteEvent() {
+		this.on(activities, "onAfterDelete", () => {
+			this.$$("datatable").filterByAll();
+		});
+	}
+	activitiesDataUpdateEvent() {
+		this.on(activities, "onDataUpdate", () => {
+			this.$$("datatable").filterByAll();
+		});
+	}
+
 	init() {
-		this.activitiesRagisterFilter();
 		activities.filter();
 		this.$$("datatable").sync(activities);
+		this.activitiesRagisterFilter();
+		this.activitiesAfterDeleteEvent();
+		this.activitiesAfterDeleteEvent();
+		this.activitiesDataUpdateEvent();
 		this._jetPopup = this.ui(FormPopup);
 	}
 }

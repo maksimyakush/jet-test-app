@@ -67,5 +67,15 @@ export default {
 	Skype: "Скайп",
 	"Select Photo": "Выбрать фото",
 	"Joining Date": "Дата вступления",
-	Birthday: "День Рождения"
+	Birthday: "День Рождения",
+	Meeting: "Собрание",
+	Chat: "Чат",
+	Lunch: "Ланч",
+	"Phone сall": "Телефонный звонок",
+	"Activity Types": "Активности",
+	Value: "Значение",
+	"First Name is requred!": "Укажите Ваше Имя!",
+	"Last Name is requred!": "Укажите Вашу Фамилию!",
+	"Email is requred!": "Укажите Ваш Эл. Ящик!",
+	"Select your status!": "Укажите Статус!"
 };

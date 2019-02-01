@@ -84,7 +84,12 @@ export default class ActivityFormView extends JetView {
 				{
 					view: "richselect",
 					label: this._("Activity"),
-					options: activityTypes,
+					options: {
+            body: {
+              data: activityTypes,
+              template: obj => this._(obj.value)
+            }
+          },
 					name: "TypeID",
 					invalidMessage: this._("Choose the activity!"),
 					required: true

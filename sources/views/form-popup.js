@@ -8,7 +8,7 @@ export default class FormPopupView extends JetView {
 			view: "popup",
 			modal: true,
 			width: 500,
-			height: 500,
+			height: 600,
 			position: "center",
 			body: this.ActivityForm
 		};

@@ -1,4 +1,7 @@
 import { JetView } from "webix-jet";
+import CommonSettings from "views/common/common-settings.js";
+import { activityTypes } from "models/activityTypes";
+import { statuses } from "models/statuses";
 
 export default class SettingsView extends JetView {
 	toggleLanguage() {
@@ -30,8 +33,28 @@ export default class SettingsView extends JetView {
 		};
 
 		return {
-			css: "webix_shadow_medium",
-			rows: [headerData, segmentedData]
+			type: "space",
+			rows: [
+				headerData,
+				segmentedData,
+				{
+					margin: 30,
+					cols: [
+						{
+							rows: [
+								{ view: "label", label: _("Activity Types") },
+								new CommonSettings(this.app, "", activityTypes)
+							]
+						},
+						{
+							rows: [
+								{ view: "label", label: _("Statuses") },
+								new CommonSettings(this.app, "", statuses)
+							]
+						}
+					]
+				}
+			]
 		};
 	}
 }
