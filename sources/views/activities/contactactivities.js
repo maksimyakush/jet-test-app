@@ -15,6 +15,7 @@ export default class ContactActivitiesView extends ActivitiesView {
 		this.$$("datatable").sync(activities);
 		this.$$("activities:label").hide();
 		this.$$("datatable").hideColumn("ContactID");
+		this.activitiesRagisterFilter();
 		this._jetPopup = this.ui(FormPopup);
 	}
 }

@@ -1,10 +1,14 @@
 import { JetView } from "webix-jet";
 import { contacts, dpContacts } from "models/contacts";
 import { activities } from "models/activities";
+import { statuses } from "models/statuses";
+
 import { cutString } from "helpers/helpers.js";
 
 export default class ContactsListView extends JetView {
 	config() {
+		const _ = this.app.getService("locale")._;
+
 		const contactsList = {
 			view: "list",
 			localId: "contacts:list",
@@ -17,8 +21,9 @@ export default class ContactsListView extends JetView {
 			onClick: {
 				"wxi-close": (e, id) => {
 					webix.confirm({
-						text:
-							"Are you sure you want to remove the contact? Removing cannot be undone!",
+						text: _(
+							"Are you sure you want to remove the contact? Removing cannot be undone!"
+						),
 						callback: result => {
 							if (result) {
 								contacts.remove(id);
@@ -53,19 +58,25 @@ export default class ContactsListView extends JetView {
 			rows: [
 				{
 					view: "toolbar",
-					cols: [{ view: "label", label: "Contacts" }]
+					cols: [{ view: "label", label: _("Contacts") }]
 				},
+
 				{
 					cols: [
 						{
 							rows: [
+								{
+									view: "text",
+									localId: "contacts:search",
+									placeholder: _("Search the contact")
+								},
 								contactsList,
 								{
 									view: "button",
 									localId: "contacts:addBtn",
 									type: "icon",
 									icon: "wxi-plus",
-									label: "Add",
+									label: _("Add"),
 									click: () => {
 										this.show("contactsform").then(() => {
 											this.$$("contacts:list").unselectAll();
@@ -91,6 +102,25 @@ export default class ContactsListView extends JetView {
 				this.$$("contacts:addBtn").enable();
 			else this.$$("contacts:addBtn").disable();
 		}
+	}
+
+	filterContactsInput() {
+		const strDateFormat = webix.Date.dateToStr("%d-%m-%Y");
+		this.on(this.$$("contacts:search"), "onTimedKeyPress", () => {
+			const inputValue = this.$$("contacts:search").getValue();
+			contacts.filter(contact => {
+				const objForFilter = Object.assign({}, contact, {
+					id: "",
+					Birthday: strDateFormat(contact.Birthday),
+					StartDate: strDateFormat(contact.StartDate),
+					StatusID: "",
+					Status: statuses.getItem(contact.StatusID).Value
+				});
+				return Object.values(objForFilter).some(item => {
+					return item.toLowerCase().includes(inputValue.toLowerCase());
+				});
+			});
+		});
 	}
 
 	selectContact(id) {
@@ -128,9 +158,7 @@ export default class ContactsListView extends JetView {
 
 	dpContactsAfterInsertEvent() {
 		this.on(dpContacts, "onAfterInsert", obj => {
-			contacts.waitData.then(() => {
-				this.app.callEvent("contacts:showContactInfo&&selectContact", [obj.id]);
-			});
+			this.app.callEvent("contacts:showContactInfo&&selectContact", [obj.id]);
 		});
 	}
 
@@ -142,14 +170,15 @@ export default class ContactsListView extends JetView {
 
 	init() {
 		this.$$("contacts:list").sync(contacts);
-		contacts.waitData
+		webix.promise
+			.all([contacts.waitData, statuses.waitData])
 			.then(() => this.show("contact-info"))
 			.then(() => this.selectContact());
 
 		this.contactsListOnAfterSelectEvent();
 		this.contactsOnBeforeDeleteEvent();
 		this.dpContactsAfterInsertEvent();
-
+		this.filterContactsInput();
 		//app event
 		this.showContactInfoAndSelectContactEvent();
 	}

@@ -7,6 +7,7 @@ export default class ActivityFormView extends JetView {
 	constructor(app, name, Popup) {
 		super(app, name);
 		this.Popup = Popup;
+		this._ = this.app.getService("locale")._;
 	}
 
 	addActivity() {
@@ -30,11 +31,11 @@ export default class ActivityFormView extends JetView {
 	setFormValuesDependOnAddOrUpdate(item) {
 		if (item) {
 			this.$$("activities:form").setValues(item);
-			this.$$("activities:form:addsave-btn").setValue("Save");
-			this.$$("activities:formlabel").setValue("Edit Activity");
+			this.$$("activities:form:addsave-btn").setValue(this._("Save"));
+			this.$$("activities:formlabel").setValue(this._("Edit Activity"));
 		} else {
-			this.$$("activities:form:addsave-btn").setValue("Add");
-			this.$$("activities:formlabel").setValue("Add Activity");
+			this.$$("activities:form:addsave-btn").setValue(this._("Add"));
+			this.$$("activities:formlabel").setValue(this._("Add Activity"));
 		}
 	}
 
@@ -60,54 +61,57 @@ export default class ActivityFormView extends JetView {
 				Date: webix.rules.isNotEmpty,
 				Time: webix.rules.isNotEmpty
 			},
+			elementsConfig: {
+				labelWidth: 130
+			},
 			elements: [
 				{
 					view: "textarea",
-					label: "Details",
+					label: this._("Details"),
 					name: "Details",
-					invalidMessage: "Fill the details field!",
+					invalidMessage: this._("Fill the details field!"),
 					required: true
 				},
 				{
 					view: "richselect",
-					label: "Contacts",
+					label: this._("Contacts"),
 					options: contacts,
 					localId: "activities:form:richselect",
 					name: "ContactID",
-					invalidMessage: "Choose the contact, please!",
+					invalidMessage: this._("Choose the contact!"),
 					required: true
 				},
 				{
 					view: "richselect",
-					label: "Activity",
+					label: this._("Activity"),
 					options: activityTypes,
 					name: "TypeID",
-					invalidMessage: "Choose the activity, please!",
+					invalidMessage: this._("Choose the activity!"),
 					required: true
 				},
 
 				{
 					view: "datepicker",
-					label: "Date",
+					label: this._("Date"),
 					name: "Date",
 					format: "%d-%m-%Y",
-					invalidMessage: "Choose date, please!",
+					invalidMessage: this._("Choose date!"),
 					required: true
 				},
 				{
 					view: "datepicker",
-					label: "Time",
+					label: this._("Time"),
 					name: "Time",
 					type: "time",
 					format: "%H:%i",
-					invalidMessage: "Choose time, please!",
+					invalidMessage: this._("Choose time!"),
 					required: true
 				},
 				{
 					view: "checkbox",
 					checkValue: "Close",
 					uncheckValue: "Open",
-					label: "Completed",
+					label: this._("Completed"),
 					name: "State"
 				},
 				{
@@ -122,7 +126,7 @@ export default class ActivityFormView extends JetView {
 				},
 				{
 					view: "button",
-					value: "Close",
+					value: this._("Close"),
 					click: () => {
 						this.$$("activities:form").clear();
 						this.$$("activities:form").clearValidation();
@@ -137,7 +141,7 @@ export default class ActivityFormView extends JetView {
 					view: "label",
 					localId: "activities:formlabel",
 					align: "center",
-					label: "Add"
+					label: this._("Add")
 				},
 				activitiesForm
 			]
