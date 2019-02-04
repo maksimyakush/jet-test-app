@@ -2,7 +2,11 @@ import { JetView } from "webix-jet";
 import { contacts } from "models/contacts";
 import { statuses } from "models/statuses";
 
-export default class FormPopupView extends JetView {
+export default class ContactsFormView extends JetView {
+	constructor(app, name) {
+		super(app, name);
+		this._ = this.app.getService("locale")._;
+	}
 	config() {
 		const contactsFormLabel = {
 			view: "label",
@@ -15,9 +19,8 @@ export default class FormPopupView extends JetView {
 			autoheight: false,
 			localId: "contacts:form",
 			elementsConfig: {
-				inputWidth: 300,
-				labelWidth: 100,
-				marginY: 200
+				margin: 50,
+				labelWidth: 150
 			},
 			rules: {
 				FirstName: webix.rules.isNotEmpty,
@@ -30,18 +33,18 @@ export default class FormPopupView extends JetView {
 					cols: [
 						{
 							view: "text",
-							label: "First Name",
+							label: this._("First Name"),
 							name: "FirstName",
 							required: true,
-							invalidMessage: "First Name is requred!"
+							invalidMessage: this._("First Name is requred!")
 						},
 						{
 							view: "text",
-							label: "Last Name",
+							label: this._("Last Name"),
 							name: "LastName",
 							height: 50,
 							required: true,
-							invalidMessage: "Last Name is requred!"
+							invalidMessage: this._("Last Name is requred!")
 						}
 					]
 				},
@@ -49,15 +52,15 @@ export default class FormPopupView extends JetView {
 					cols: [
 						{
 							view: "text",
-							label: "Email",
+							label: this._("Email"),
 							name: "Email",
 							type: "email",
 							required: true,
-							invalidMessage: "Email is requred!"
+							invalidMessage: this._("Email is requred!")
 						},
 						{
 							view: "datepicker",
-							label: "Joining Date",
+							label: this._("Joining Date"),
 							name: "StartDate",
 							format: webix.Date.dateToStr("%d %M %Y")
 						}
@@ -67,15 +70,20 @@ export default class FormPopupView extends JetView {
 					cols: [
 						{
 							view: "richselect",
-							label: "Status",
+							label: this._("Status"),
 							name: "StatusID",
-							options: statuses,
+							options: {
+								body: {
+									data: statuses,
+									template: obj => this._(obj.value)
+								}
+							},
 							required: true,
-							invalidMessage: "Select your status!"
+							invalidMessage: this._("Select your status!")
 						},
 						{
 							view: "text",
-							label: "Job",
+							label: this._("Job"),
 							name: "Job"
 						}
 					]
@@ -84,12 +92,12 @@ export default class FormPopupView extends JetView {
 					cols: [
 						{
 							view: "text",
-							label: "Company",
+							label: this._("Company"),
 							name: "Company"
 						},
 						{
 							view: "text",
-							label: "Website",
+							label: this._("Website"),
 							name: "Website"
 						}
 					]
@@ -98,12 +106,12 @@ export default class FormPopupView extends JetView {
 					cols: [
 						{
 							view: "text",
-							label: "Address",
+							label: this._("Address"),
 							name: "Address"
 						},
 						{
 							view: "text",
-							label: "Skype",
+							label: this._("Skype"),
 							name: "Skype"
 						}
 					]
@@ -112,12 +120,12 @@ export default class FormPopupView extends JetView {
 					cols: [
 						{
 							view: "text",
-							label: "Phone",
+							label: this._("Phone"),
 							name: "Phone"
 						},
 						{
 							view: "datepicker",
-							label: "Birthday",
+							label: this._("Birthday"),
 							name: "Birthday",
 							format: webix.Date.dateToStr("%d %M %Y")
 						}
@@ -131,13 +139,13 @@ export default class FormPopupView extends JetView {
 							view: "template",
 							template: obj =>
 								`<img src=${obj.Photo ||
-									"https://avatars1.githubusercontent.com/u/4639085?s=200&v=4"} width="100" height="100" style="max-width: 100%; max-height: 100%;" alt="Contact Image"} />`,
+									"https://avatars1.githubusercontent.com/u/4639085?s=200&v=4"} width="150" height="150" style="max-width: 100%; max-height: 100%;" alt="Contact Image"} />`,
 							name: "Photo",
-							height: 100,
-							width: 100
+							height: 150,
+							width: 150
 						},
 						{
-							elementsConfig: { inputWidth: 150 },
+							elementsConfig: { inputWidth: 250, margin: 10 },
 
 							rows: [
 								{
@@ -146,7 +154,7 @@ export default class FormPopupView extends JetView {
 									multiple: false,
 									autosend: false,
 									accept: "image/png, image/gif, image/jpeg, image/jpg",
-									label: "Select Photo",
+									label: this._("Select Photo"),
 									labelWidth: 150,
 									on: {
 										onBeforeFileAdd: file => {
@@ -159,7 +167,7 @@ export default class FormPopupView extends JetView {
 												type != "jpg"
 											) {
 												webix.message({
-													text: "Invalid photo",
+													text: this._("Invalid photo"),
 													type: "error"
 												});
 												return;
@@ -182,7 +190,7 @@ export default class FormPopupView extends JetView {
 								},
 								{
 									view: "button",
-									value: "Delete",
+									value: this._("Delete"),
 									click: () => {
 										const { Photo } = this.$$("contacts:form").getValues();
 										if (Photo) {
@@ -204,6 +212,9 @@ export default class FormPopupView extends JetView {
 				{
 					view: "button",
 					localId: "form:addsave",
+					inputWidth: 250,
+					align: "right",
+
 					value: "Add(*save)",
 					click: () => {
 						if (!this.$$("contacts:form").validate()) return;
@@ -220,10 +231,12 @@ export default class FormPopupView extends JetView {
 				},
 				{
 					view: "button",
-					value: "Close",
+					inputWidth: 250,
+					align: "right",
+					value: this._("Close"),
 					click: () => {
 						webix.confirm({
-							text: "Are you sure you want to exit?",
+							text: this._("Are you sure you want to exit?"),
 							callback: result => {
 								if (result) {
 									if (!this.getParam("id", true)) {
@@ -245,8 +258,8 @@ export default class FormPopupView extends JetView {
 	}
 
 	init() {
-		this.$$("form:addsave").setValue("Add");
-		this.$$("contacts:formLabel").setValue("Add Contact");
+		this.$$("form:addsave").setValue(this._("Add"));
+		this.$$("contacts:formLabel").setValue(this._("Add Contact"));
 		this.$$("contacts:form").clear();
 		this.$$("contacts:form").clearValidation();
 
@@ -257,8 +270,8 @@ export default class FormPopupView extends JetView {
 			this.$$("contacts:form").setValues(
 				contacts.getItem(this.getParam("id", true))
 			);
-			this.$$("form:addsave").setValue("Save");
-			this.$$("contacts:formLabel").setValue("Edit Contact");
+			this.$$("form:addsave").setValue(this._("Save"));
+			this.$$("contacts:formLabel").setValue(this._("Edit Contact"));
 		});
 	}
 }

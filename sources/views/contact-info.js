@@ -6,6 +6,8 @@ import ContactFiles from "views/contactfiles";
 
 export default class ContactInfoView extends JetView {
 	config() {
+		const _ = this.app.getService("locale")._;
+
 		const toolbar = {
 			view: "toolbar",
 			localId: "toolbar",
@@ -14,11 +16,12 @@ export default class ContactInfoView extends JetView {
 			rows: [
 				{
 					view: "button",
-					value: "Delete",
+					value: _("Delete"),
 					click: () => {
 						webix.confirm({
-							text:
-								"Are you sure you want to remove the contact? Removing cannot be undone!",
+							text: _(
+								"Are you sure you want to remove the contact? Removing cannot be undone!"
+							),
 							callback: result => {
 								if (result) {
 									const id = this.getParam("id", true);
@@ -31,7 +34,7 @@ export default class ContactInfoView extends JetView {
 				},
 				{
 					view: "button",
-					value: "Edit",
+					value: _("Edit"),
 					click: () => {
 						this.show("contactsform");
 					}
@@ -53,7 +56,7 @@ export default class ContactInfoView extends JetView {
 									"https://avatars1.githubusercontent.com/u/4639085?s=200&v=4"} width="150" height="150" alt="Contact Image" class="contact__img" />
                  <div class="contact__status"><i class="webix_icon wxi-${
 										contact.StatusIcon
-									}"></i> ${contact.StatusValue}</div>
+									}"></i> ${_(contact.StatusValue)}</div>
               </div>
               <div class="contact__details">
                 <div><i class="far fa-envelope"></i> ${contact.Email}</div>
@@ -91,8 +94,8 @@ export default class ContactInfoView extends JetView {
 							inputWidth: "400",
 							multiview: true,
 							options: [
-								{ id: "activities", value: "Activities" },
-								{ id: "files", value: "Files" }
+								{ id: "activities", value: _("Activities") },
+								{ id: "files", value: _("Files") }
 							]
 						},
 						{
@@ -115,7 +118,7 @@ export default class ContactInfoView extends JetView {
 				let status = statuses.getItem(contact.StatusID);
 				if (!status) {
 					status = {
-						Value: "Status is not defined",
+						Value: _("Status is not defined"),
 						Icon: ""
 					};
 				}
